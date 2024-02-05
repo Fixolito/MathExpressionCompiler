@@ -18,7 +18,11 @@ public class Program
             RunPrompt();
         } */
         var test = new MathExpressionParser();
-        MathExpressionParser.GetExpression<Complex>("((1234i+i123)),.2i/test+ii34.4+.44");
+        //var tmp = MathExpressionParser.GetExpression<double>("2+test/(2+sin(ball))");
+        var tmp = MathExpressionParser.GetExpressionTree<double>("2+sin(ball)");
+        
+        MathExpressionParser.GetExpressionTree<Complex>("-3/sin * polar(-4^sum(i=0,200,i+2)+test)");
+        MathExpressionParser.GetExpressionTree<Complex>("((1234i+i123)),.2i/test+ii34.4+.44");
         //MathExpressionParser.GetExpression<Complex>("bla");
         //MathExpressionParser.GetExpression<int>("bla");
     }

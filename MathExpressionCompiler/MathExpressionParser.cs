@@ -6,7 +6,7 @@ namespace MathExpressionCompiler;
 
 public class MathExpressionParser()
 {
-    public static Expression GetExpression<T>(string source)
+    public static Expression GetExpressionTree<T>(string source)
     {
         if(typeof(T) != typeof(double) && typeof(T) != typeof(Complex))
         {
@@ -23,11 +23,27 @@ public class MathExpressionParser()
         {
             Console.WriteLine(t);
         }
-        // Implement parsing logic here
+        Parser<T> parser = new(tokens);
+        Term<T> root = parser.Parse();
+
+        ASTPrinter<T> printer = new();
+        printer.Print(root);
+
+        Console.WriteLine(root.GetType());
+        Console.WriteLine(((Binary<T>)root).BinaryOperator);
+
+        Console.WriteLine("DONE");
+
         throw new NotImplementedException();
     }
 
     internal static void Error(string message) { Report("", message); }
+    internal static void Error(Token token, string message)
+    {
+        if (token.Type == TokenType.EOF) Report(" at end", message);
+        else Report($" at <{token.Lexeme}>", message);
+    }
+
     private static void Report(string where, string message)
     {
         Console.Error.WriteLine($"Error{where}: {message}");

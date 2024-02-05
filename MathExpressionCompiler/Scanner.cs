@@ -14,9 +14,10 @@ public class Scanner<T>(string source)
         {"cos", TokenType.COS},
         {"tan", TokenType.TAN},
         {"sum", TokenType.SUM},
+        {"polar", TokenType.POLAR}
     };
 
-    private readonly string Source = source.ToLower();
+    private readonly string Source = source.ToLower().Replace('=', ',');
     private readonly List<Token> Tokens = [];
     private int Start = 0;
     private int Current = 0;

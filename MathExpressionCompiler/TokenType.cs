@@ -10,7 +10,7 @@ public enum TokenType
 
     // Multiple characters
     SIN, COS, TAN, 
-    SUM,
+    SUM, POLAR, SQRT,
 
     // Literals
     CONSTANT,
