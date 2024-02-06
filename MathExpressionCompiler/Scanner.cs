@@ -21,7 +21,7 @@ public class Scanner<T>(string source)
     private readonly List<Token> Tokens = [];
     private int Start = 0;
     private int Current = 0;
-    public NumberSpace NumberSpace = GetNumberSpace(typeof(T));
+    public NumberSpace NumberSpace = Helper.GetNumberSpace(typeof(T));
 
     public List<Token> ScanTokens()
     {
@@ -34,12 +34,7 @@ public class Scanner<T>(string source)
         return Tokens;
     }
 
-    private static NumberSpace GetNumberSpace(Type type)
-    {
-        if (type == typeof(double)) return NumberSpace.REAL;
-        else if (type == typeof(Complex)) return NumberSpace.COMPLEX;
-        else throw new Exception("Only <double> for real numbers or <Complex> for complex numbers are allowed.");
-    }
+    
 
     private void ScanToken()
     {
@@ -60,7 +55,7 @@ public class Scanner<T>(string source)
             case >= '0' and <= '9': HandleDigits(); break;
             case '.': HandleShorthandNotation(); break;
             case ' ': break;
-            default: MathExpressionParser.Error($"Unknown char: <{c}> at {Current - 1}\n{source}\n{new string(' ', (Current - 1))}^"); break;
+            default: MathExpressionCreator.Error($"Unknown char: <{c}> at {Current - 1}\n{source}\n{new string(' ', (Current - 1))}^"); break;
 
         }
 
@@ -70,7 +65,7 @@ public class Scanner<T>(string source)
     {
         Advance();
         while (IsDigit(Peek())) Advance();
-        if (Peek() == '.') MathExpressionParser.Error($"Unexpected <.> at {Current}\n{source}\n{new string(' ', (Current))}^");
+        if (Peek() == '.') MathExpressionCreator.Error($"Unexpected <.> at {Current}\n{source}\n{new string(' ', (Current))}^");
         double value = Double.Parse(Source[Start..Current], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
         AddToken(TokenType.CONSTANT, value);
     }
@@ -82,18 +77,19 @@ public class Scanner<T>(string source)
         {
             Advance();
             while (IsDigit(Peek())) Advance();
-            if (Peek() == '.') MathExpressionParser.Error($"Unexpected <.> at {Current}\n{source}\n{new string(' ', (Current))}^");
+            if (Peek() == '.') MathExpressionCreator.Error($"Unexpected <.> at {Current}\n{source}\n{new string(' ', (Current))}^");
         }
-        if (NumberSpace == NumberSpace.REAL)
+        switch(NumberSpace)
         {
-            double value = Double.Parse(Source[Start..Current], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-            AddToken(TokenType.CONSTANT, value);
-        }
-        if (NumberSpace == NumberSpace.COMPLEX)
-        {
-            double real = Double.Parse(Source[Start..Current], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-            Complex value = new(real, 0);
-            AddToken(TokenType.CONSTANT, value);
+            case NumberSpace.REAL:
+                double value = Double.Parse(Source[Start..Current], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                AddToken(TokenType.CONSTANT, value);
+                break;
+            case NumberSpace.COMPLEX:
+                double real = Double.Parse(Source[Start..Current], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+                Complex c = new(real, 0);
+                AddToken(TokenType.CONSTANT, c);
+                break;
         }
     }
 

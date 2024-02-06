@@ -9,7 +9,7 @@ public class Program
         string baseName = "Term";
         string[] children = [
             "Binary   : Term<Space> left, Token binaryOperator, Term<Space> right",
-            "Variable : string name",
+            "Variable : string name, <Space?> value",
             "Constant : <Space> value",
             "Function : Token functionOperator, List<Term<Space>> parameters",
             "Unary    : Token unaryOperator, Term<Space> right",

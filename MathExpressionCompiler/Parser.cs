@@ -14,27 +14,15 @@ public class Parser<T>(List<Token> tokens)
     private readonly List<Token> Tokens = tokens;
     private int Current = 0;
 
-    private List<string> VariableNames = [];
-
-    //public Term<T> Root;
-
-    public Term<T> Parse()
+    public List<Term<T>> Parse()
     {
         List<Term<T>> terms = [];
-        while (!IsAtEnd()) terms.Add(Function());
-        return terms[0];
+        while (!IsAtEnd()) terms.Add(AddSub());
+        return terms;
     }
 
-
-    private Term<T> Function()
-    {
-        Console.WriteLine($"Function: {Peek().Type.ToString()}");
-        
-        return AddSub();
-    }
     private Term<T> AddSub()
     {
-        Console.WriteLine($"AddSub: {Peek().Type.ToString()}");
         Term<T> term = Factor();
         while (Match(TokenType.PLUS, TokenType.MINUS))
         {
@@ -45,10 +33,8 @@ public class Parser<T>(List<Token> tokens)
         return term;
     }
 
-
     private Term<T> Factor()
     {
-        Console.WriteLine($"Factor: {Peek().Type.ToString()}");
         Term<T> term = Power();
         while (Match(TokenType.STAR, TokenType.SLASH))
         {
@@ -61,24 +47,22 @@ public class Parser<T>(List<Token> tokens)
 
     private Term<T> Power()
     {
-        Console.WriteLine($"Power: {Peek().Type.ToString()}");
-        Term<T> term = Unary();
+        Term<T> left = Unary();
         while (Match(TokenType.CARET))
         {
             Token op = Previous();
-            Term<T> exponent = Unary();
-            term = new Binary<T>(term, op, exponent);
+            Term<T> right = Power();
+            left = new Binary<T>(left, op, right);
         }
-        return term;
+        return left;
     }
 
     private Term<T> Unary()
     {
-        Console.WriteLine($"Unary: {Peek().Type.ToString()}");
         if (Match(TokenType.MINUS))
         {
             Token op = Previous();
-            Term<T> right = Function();
+            Term<T> right = AddSub();
             return new Unary<T>(op, right);
         }
         return Primary();
@@ -86,27 +70,25 @@ public class Parser<T>(List<Token> tokens)
 
     private Term<T> Primary()
     {
-        Console.WriteLine($"Primary: {Peek().Type.ToString()}");
         if (Match(TokenType.LEFT_PARENTHESIS))
         {
-            Term<T> expression = Function();
+            Term<T> expression = AddSub();
             Consume(TokenType.RIGHT_PARENTHESIS, @"Expected <)> after expression.");
             return expression;
         }
         if (Match(TokenType.VARIABLE))
         {
-            return new Variable<T>(Previous().Literal!.ToString()!);
+            return new Variable<T>(Previous().Literal!.ToString()!, default);
         }
         if (Match(TokenType.CONSTANT, TokenType.IMAGINARY_UNIT))
         {
             return new Constant<T>((T) Previous().Literal!);
         }
-        //sd
         if (Match(TokenType.SIN, TokenType.COS, TokenType.TAN))
         {
             Token op = Previous();
             Consume(TokenType.LEFT_PARENTHESIS, @"Expected <(> after function name.");
-            Term<T> term = Function();
+            Term<T> term = AddSub();
             Consume(TokenType.RIGHT_PARENTHESIS, @"Expected <)> after function term.");
             List<Term<T>> terms = [term];
             return new Function<T>(op, terms);
@@ -115,9 +97,9 @@ public class Parser<T>(List<Token> tokens)
         {
             Token op = Previous();
             Consume(TokenType.LEFT_PARENTHESIS, @"Expected <(> after function name.");
-            Term<T> arg1 = Function();
+            Term<T> arg1 = AddSub();
             Consume(TokenType.COMMA, @"Expected <,> between function arguments");
-            Term<T> arg2 = Function();
+            Term<T> arg2 = AddSub();
             Consume(TokenType.RIGHT_PARENTHESIS, @"Expected <)> after function term.");
             List<Term<T>> terms = [arg1, arg2];
             return new Function<T>(op, terms);
@@ -129,20 +111,19 @@ public class Parser<T>(List<Token> tokens)
             if (Peek().Type != TokenType.VARIABLE) throw Error(Peek(), "Expected variable");
             Term<T> variable = Primary();
             Consume(TokenType.COMMA, @"Expected <,> between function arguments");
-            Term<T> start = Function();
+            Term<T> start = AddSub();
             Consume(TokenType.COMMA, @"Expected <,> between function arguments");
-            Term<T> finish = Function();
+            Term<T> finish = AddSub();
             Consume(TokenType.COMMA, @"Expected <,> between function arguments");
-            Term<T> body = Function();
+            Term<T> body = AddSub();
             Consume(TokenType.RIGHT_PARENTHESIS, @"Expected <)> after function term.");
             List<Term<T>> terms = [variable, start, finish, body];
             return new Function<T>(op, terms);
         }
-        //sad
         throw Error(Peek(), $"Primary: Expected expression but got {Peek().Type}.");
     }
 
-    private Token Consume(TokenType type, String message)
+    private Token Consume(TokenType type, string message)
     {
         if (Check(type)) return Advance();
         throw Error(Peek(), message);
@@ -150,7 +131,7 @@ public class Parser<T>(List<Token> tokens)
 
     private ParseError Error(Token token, string message)
     {
-        MathExpressionParser.Error(token, message);
+        MathExpressionCreator.Error(token, message);
         return new ParseError(message);
     }
 
@@ -193,5 +174,4 @@ public class Parser<T>(List<Token> tokens)
     {
         return Peek().Type == TokenType.EOF;
     }
-
 }

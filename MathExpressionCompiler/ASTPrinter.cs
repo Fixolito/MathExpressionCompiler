@@ -29,7 +29,7 @@ public class ASTPrinter<Space> : Term<Space>.IVisitor<string>
         builder.Append('(').Append(term.Parameters[0].Accept(this));
         for (int i = 1; i < term.Parameters.Count - 1; i++)
         {
-            builder.Append(" ,").Append(term.Parameters[i].Accept(this));
+            builder.Append(", ").Append(term.Parameters[i].Accept(this));
         }
         builder.Append(')');
         return builder.ToString();
