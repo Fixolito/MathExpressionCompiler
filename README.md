@@ -46,3 +46,20 @@ Console.WriteLine(del.DynamicInvoke(4,7));
 3. To prevent scoping confusion all methods like ``sqrt``, ``sin``, ``cos``... need to be followed by ``(<term>)``.
 4. Methods taking multiple parameters like ``sum`` have their parameters seperated by ``,`` : ``sum(x,1,4,x/2)``.
 5. Spaces can be used to make you equations easier to read.
+
+## Implemented functions
+In the folowing table all parameters can be any term except the ones being shown as ``VAR``. They have to be a variable name.
+
+| Operation      | Syntax               | Description                                                                   |
+|----------------|----------------------|-------------------------------------------------------------------------------|
+| Addition       | ``x + y``            | Add ``x`` and ``y``                                                           |
+| Subtraction    | ``x - y``            | Subtract ``y`` from ``x``                                                     |
+| Multiplication | ``x * y``            | Multiply ``x`` and ``y``                                                      |
+| Division       | ``x / y``            | Divide ``x`` by ``y``                                                         |
+| Power          | ``x ^ y``            | ``x`` to the power of ``y``                                                   |
+| Sinus          | ``sin(x)``           | Sinus of ``x``                                                                |
+| Cosinus        | ``cos(x)``           | Cosinus of ``x``                                                              |
+| Tangent        | ``tan(x)``           | Tangent of ``x``                                                              |
+| Square Root    | ``sqrt(x)``          | Square root of ``x``                                                          |
+| Polar          | ``polar(x,y)``       | Create ``Complex`` from polar using ``x.Real`` and ``y.Real``                 |
+| Sum            | ``sum(VAR,a,b,c)``   | Add together each iteration of ``c``. Start ``Var = a`` and end ``VAR = b``   |
