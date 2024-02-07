@@ -1,20 +1,20 @@
 using System.Linq.Expressions;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Parser<T>(List<Token> tokens)
+internal class Parser<T>(List<Token> tokens)
 {
-    public class ParseError : Exception
+    internal class ParseError : Exception
     {
-        public ParseError() : base() { }
-        public ParseError(string message) : base(message) { }
-        public ParseError(string message, Exception inner) : base(message, inner) { }
+        internal ParseError() : base() { }
+        internal ParseError(string message) : base(message) { }
+        internal ParseError(string message, Exception inner) : base(message, inner) { }
     }
 
     private readonly List<Token> Tokens = tokens;
     private int Current = 0;
 
-    public List<Term<T>> Parse()
+    internal List<Term<T>> Parse()
     {
         List<Term<T>> terms = [];
         while (!IsAtEnd()) terms.Add(AddSub());
@@ -84,7 +84,7 @@ public class Parser<T>(List<Token> tokens)
         {
             return new Constant<T>((T) Previous().Literal!);
         }
-        if (Match(TokenType.SIN, TokenType.COS, TokenType.TAN))
+        if (Match(TokenType.SIN, TokenType.COS, TokenType.TAN, TokenType.SQRT))
         {
             Token op = Previous();
             Consume(TokenType.LEFT_PARENTHESIS, @"Expected <(> after function name.");

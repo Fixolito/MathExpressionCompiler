@@ -1,13 +1,13 @@
 using System.Linq.Expressions;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-class ExpressionReplacer : ExpressionVisitor
+internal class ExpressionReplacer : ExpressionVisitor
 {
     private readonly ParameterExpression[] _originals;
     private readonly Expression[] _replacements;
 
-    public ExpressionReplacer(ParameterExpression[] originals, Expression[] replacements)
+    internal ExpressionReplacer(ParameterExpression[] originals, Expression[] replacements)
     {
         _originals = originals;
         _replacements = replacements;

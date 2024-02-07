@@ -1,6 +1,6 @@
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public enum NumberSpace
+internal enum NumberSpace
 {
     REAL,
     COMPLEX

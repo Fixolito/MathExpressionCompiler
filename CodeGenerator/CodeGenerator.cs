@@ -26,13 +26,13 @@ public static class CodeGenerator
         {
             writer.WriteLine("using System.Collections.Generic;");
             writer.WriteLine();
-            writer.WriteLine("namespace MathExpressionCompiler;");
+            writer.WriteLine("namespace MEC;");
             writer.WriteLine();
-            writer.WriteLine($"public abstract class {baseName}<Space>");
+            writer.WriteLine($"internal abstract class {baseName}<Space>");
             writer.WriteLine("{");
 
             // Interface
-            writer.WriteLine("    public interface IVisitor<T>");
+            writer.WriteLine("    internal interface IVisitor<T>");
             writer.WriteLine("    {");
 
 
@@ -46,7 +46,7 @@ public static class CodeGenerator
 
             // The base accept() method.
             writer.WriteLine();
-            writer.WriteLine($"    public abstract T Accept<T>(IVisitor<T> visitor);");
+            writer.WriteLine($"    internal abstract T Accept<T>(IVisitor<T> visitor);");
             writer.WriteLine("}");
         }
     }
@@ -59,9 +59,9 @@ public static class CodeGenerator
         {
             writer.WriteLine("using System.Collections.Generic;");
             writer.WriteLine();
-            writer.WriteLine("namespace MathExpressionCompiler;");
+            writer.WriteLine("namespace MEC;");
             writer.WriteLine();
-            writer.WriteLine($"public class {className}<Space> : {baseName}<Space>");
+            writer.WriteLine($"internal class {className}<Space> : {baseName}<Space>");
             writer.WriteLine("{");
             foreach(string field in arguments)
             {
@@ -69,7 +69,7 @@ public static class CodeGenerator
                 if (type[0] == '<' && type[^1] == '>') type = type[1..^1];
 
                 string fieldName = FirstLetterToUpper(field.Split(" ")[1]);
-                writer.WriteLine($"    public readonly {type} {fieldName};");
+                writer.WriteLine($"    internal readonly {type} {fieldName};");
             }
             writer.WriteLine();
 
@@ -84,7 +84,7 @@ public static class CodeGenerator
             }
             fieldString = string.Join(", ", cleanedArguments);
 
-            writer.WriteLine($"    public {className}({fieldString})");
+            writer.WriteLine($"    internal {className}({fieldString})");
             writer.WriteLine("    {");
             foreach(string field in arguments)
             {
@@ -96,7 +96,7 @@ public static class CodeGenerator
 
             // Implementing interface
             writer.WriteLine();
-            writer.WriteLine($"    public override T Accept<T>(IVisitor<T> visitor)");
+            writer.WriteLine($"    internal override T Accept<T>(IVisitor<T> visitor)");
             writer.WriteLine("    {");
             writer.WriteLine($"        return visitor.Visit{className}{baseName}(this);");
             writer.WriteLine("    }");

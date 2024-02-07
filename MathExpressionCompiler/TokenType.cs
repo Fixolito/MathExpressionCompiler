@@ -1,6 +1,6 @@
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public enum TokenType
+internal enum TokenType
 {
     // Single characters
     LEFT_PARENTHESIS, RIGHT_PARENTHESIS,

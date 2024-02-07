@@ -1,9 +1,10 @@
 using System.Linq.Expressions;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class VariableManager<Space>
+internal class VariableManager<Space>
 {
+    internal bool IsActive = true;
     private List<ParameterExpression> Bound = [];
     private List<string> BoundNames = [];
     private Dictionary<string, int> CurrentBoundIndex = [];
@@ -15,7 +16,7 @@ public class VariableManager<Space>
 
     private List<ParameterExpression> CurrentEnvironment = [];
 
-    public VariableManager(IEnumerable<string> unboundVariables, IEnumerable<string> boundVariableNames)
+    internal VariableManager(IEnumerable<string> unboundVariables, IEnumerable<string> boundVariableNames)
     {
         foreach (string parameterName in unboundVariables)
         {
@@ -27,19 +28,47 @@ public class VariableManager<Space>
 
         foreach (string boundName in boundVariableNames)
         {
-            Bound.Add(Expression.Parameter(typeof(Space), boundName));
+            Bound.Add(Expression.Variable(typeof(Space), boundName));
             BoundNames.Add(boundName);
             NextBoundIndex.TryAdd(boundName, Helper.IndexOfFirstOccurrence(BoundNames, boundName));
             CurrentBoundIndex.TryAdd(boundName, -1);
         }
     }
 
-    public List<ParameterExpression> GetUnboundParameters()
+    internal List<ParameterExpression> PrecalculateEnvironment(List<string> unboundNames, List<string> boundNames, List<string> freshlyBoundNames)
+    {
+        foreach(string name in freshlyBoundNames)
+        {
+            if (unboundNames.Remove(name))
+            {
+                boundNames.Add(name);
+            }
+        }
+        List<ParameterExpression> result = [];
+        foreach (string name in unboundNames)
+        {
+            if (ParameterLookup.TryGetValue(name, out ParameterExpression? unbound))
+            {
+                result.Add(unbound);
+            }
+        }
+        foreach (string name in boundNames)
+        {
+            var tmp = CurrentEnvironment.Find(p => p.Name!.Equals(name));
+            if (tmp is not null)
+            {
+                result.Add(tmp);
+            }
+        }
+        return result;
+    }
+
+    internal List<ParameterExpression> GetUnboundParameters()
     {
         return Parameters;
     }
 
-    public ParameterExpression GetVariable(string name)
+    internal ParameterExpression GetVariable(string name)
     {
         var enviromentVariables = CurrentEnvironment.FindAll(p => p.Name!.Equals(name));
         if (enviromentVariables.Count == 1)
@@ -53,13 +82,13 @@ public class VariableManager<Space>
         return ParameterLookup[name];
     }
 
-    public void LeaveEnvironment(ParameterExpression boundVariable)
+    internal void LeaveEnvironment(ParameterExpression boundVariable)
     {
         CurrentBoundIndex[boundVariable.Name!] = -1;
         CurrentEnvironment.Remove(boundVariable);
     }
 
-    public ParameterExpression EnterEnvironment(string boundVariableName)
+    internal ParameterExpression EnterEnvironment(string boundVariableName)
     {
         int index = NextBoundIndex[boundVariableName];
         CurrentBoundIndex[boundVariableName] = index;

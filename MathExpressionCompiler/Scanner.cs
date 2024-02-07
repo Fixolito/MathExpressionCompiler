@@ -4,9 +4,9 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Scanner<T>(string source)
+internal class Scanner<T>(string source)
 {
     private static Dictionary<string, TokenType> Keywords { get; } = new Dictionary<string, TokenType>
     {
@@ -14,6 +14,7 @@ public class Scanner<T>(string source)
         {"cos", TokenType.COS},
         {"tan", TokenType.TAN},
         {"sum", TokenType.SUM},
+        {"sqrt", TokenType.SQRT},
         {"polar", TokenType.POLAR}
     };
 
@@ -21,9 +22,9 @@ public class Scanner<T>(string source)
     private readonly List<Token> Tokens = [];
     private int Start = 0;
     private int Current = 0;
-    public NumberSpace NumberSpace = Helper.GetNumberSpace(typeof(T));
+    internal NumberSpace NumberSpace = Helper.GetNumberSpace(typeof(T));
 
-    public List<Token> ScanTokens()
+    internal List<Token> ScanTokens()
     {
         while (!IsAtEnd())
         {

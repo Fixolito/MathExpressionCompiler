@@ -1,12 +1,12 @@
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Token
+internal class Token
 {
-    public readonly TokenType Type;
-    public readonly string Lexeme;
-    public readonly Object? Literal;
+    internal readonly TokenType Type;
+    internal readonly string Lexeme;
+    internal readonly Object? Literal;
 
-    public Token(TokenType type, string lexeme, Object? literal)
+    internal Token(TokenType type, string lexeme, Object? literal)
     {
         Type = type;
         Lexeme = lexeme;

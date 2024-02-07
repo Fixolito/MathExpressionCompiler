@@ -3,20 +3,21 @@ using System.Numerics;
 using System.Reflection;
 using System.Xml;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
+internal class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
 {
     private ASTVariableNameCollector<Space> NameCollector;
     private VariableManager<Space> VariableManager;
 
     private readonly List<Term<Space>> Terms;
     private Term<Space> RootTerm => Terms[0];
-    public Expression? RootExpression { get; private set; }
+    internal Expression? RootExpression { get; private set; }
+    
 
     private NumberSpace NumberSpace;
 
-    public ExpressionCreator(List<Term<Space>> terms)
+    internal ExpressionCreator(List<Term<Space>> terms)
     {
         Terms = terms;
         NameCollector = new(terms);
@@ -29,7 +30,7 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
         NumberSpace = Helper.GetNumberSpace(typeof(Space));
     }
 
-    public Delegate Compile()
+    internal Delegate Compile()
     {
         if (RootExpression is null)
         {
@@ -41,12 +42,12 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
         return lambda.Compile();
     }
 
-    public ParameterExpression[] GetParameters()
+    internal ParameterExpression[] GetParameters()
     {
         return [.. VariableManager.GetUnboundParameters()];
     }
 
-    public void CreateExpression()
+    internal void CreateExpression()
     {
         RootExpression = RootTerm.Accept(this);
     }
@@ -97,7 +98,8 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
 
     public Expression VisitVariableTerm(Variable<Space> term)
     {
-        return VariableManager.GetVariable(term.Name);
+        if (VariableManager.IsActive) return VariableManager.GetVariable(term.Name);
+        return Expression.Parameter(typeof(Space), term.Name);
     }
 
     public Expression VisitConstantTerm(Constant<Space> term)
@@ -120,9 +122,124 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
         };
     }
 
-    private MethodCallExpression Sum(Function<Space> term)
+    private BlockExpression Sum(Function<Space> term)
     {
-        throw new NotImplementedException();
+
+
+        // Get loop variable
+        VariableManager.IsActive = false;
+        string loopVariableName = ((ParameterExpression)term.Parameters[0].Accept(this)).Name!;
+        VariableManager.IsActive = true;
+        ParameterExpression loopVariable = VariableManager.EnterEnvironment(loopVariableName);
+        Expression start = term.Parameters[1].Accept(this);
+        Expression end = term.Parameters[2].Accept(this);
+        Expression body = term.Parameters[3].Accept(this);
+
+
+        var returnTarget = Expression.Label(typeof(Space));
+        var resultVariable = Expression.Variable(typeof(Space), "RESULTSUM");
+        var breakLabel = Expression.Label("LoopBreak");
+        Space zero = (Space)Helper.Zero(NumberSpace);
+        Space one = (Space)Helper.One(NumberSpace);
+        var initializeResult = Expression.Assign(resultVariable, Expression.Constant(zero));
+        var initializeIterationVariable = Expression.Assign(loopVariable, start);
+
+        Expression condition = Expression.Variable(typeof(Space), "DUMMY");
+        switch (NumberSpace)
+        {
+            case NumberSpace.REAL:
+                condition = Expression.LessThanOrEqual(loopVariable, end);
+                break;
+            case NumberSpace.COMPLEX:
+                Expression loopVariableReal = Expression.Property(loopVariable, nameof(System.Numerics.Complex.Real));
+                Expression endReal = Expression.Property(end, nameof(System.Numerics.Complex.Real));
+                condition = Expression.LessThanOrEqual(loopVariableReal, endReal);
+                break;
+            default:
+                break;
+        };
+
+        var incrementIterationVariable = Expression.Assign(loopVariable, Expression.Add(loopVariable, Expression.Constant(one)));
+
+        var updateResultVariable = Expression.Assign(resultVariable, Expression.Add(resultVariable, body));
+
+        var loopBlock = Expression.Block(body, updateResultVariable, incrementIterationVariable, condition);
+
+        var loop = Expression.Loop(
+            Expression.IfThenElse(
+                condition,
+                loopBlock,
+                Expression.Break(breakLabel)
+            ),
+            breakLabel
+        );
+
+        var block = Expression.Block(
+            [resultVariable, loopVariable],
+            initializeResult,
+            initializeIterationVariable,
+            loop,
+            resultVariable,
+            Expression.Label(returnTarget, resultVariable)
+        );
+
+        VariableManager.LeaveEnvironment(loopVariable);
+
+        return block;
+    }
+
+    public Expression CreateSumExpressionWithVariables(
+        ParameterExpression iterationVariable,
+        Expression start,
+        Expression end,
+        Func<ParameterExpression, IEnumerable<Expression>> bodyFunc,
+        //Func<ParameterExpression, IEnumerable<Expression>> bodyFunc,
+        IEnumerable<ParameterExpression> innerVariables)
+    {
+        // Create a label target for returning the final result
+        var returnTarget = Expression.Label(typeof(double));
+        var resultVariable = Expression.Variable(typeof(double), "result");
+        var breakLabel = Expression.Label("LoopBreak");
+
+        // Initialize the result variable and iteration variable
+        var initializeResult = Expression.Assign(resultVariable, Expression.Constant(0.0));
+        var initializeIterationVariable = Expression.Assign(iterationVariable, start);
+
+        // Construct the loop body using the provided bodyFunc
+        var loopBody = bodyFunc(iterationVariable);
+
+        // Loop condition
+        var condition = Expression.LessThanOrEqual(iterationVariable, end);
+
+        // Increment iteration variable
+        var incrementIterationVariable = Expression.Assign(iterationVariable, Expression.Add(iterationVariable, Expression.Constant(1.0)));
+
+        // The loop block, including the body and increment
+        var loopBlock = Expression.Block(
+            new[] { iterationVariable }.Union(innerVariables),
+            loopBody.Concat(new[] { incrementIterationVariable })
+        );
+
+        // Construct the loop using a conditional expression for iteration
+        var loop = Expression.Loop(
+            Expression.IfThenElse(
+                condition,
+                loopBlock,
+                Expression.Break(breakLabel)
+            ),
+            breakLabel
+        );
+
+        // The overall block, including initialization, loop, and return
+        var block = Expression.Block(
+            new[] { resultVariable }.Union(innerVariables),
+            initializeResult,
+            initializeIterationVariable,
+            loop,
+            Expression.Label(returnTarget, resultVariable)
+        );
+
+        return Expression.Lambda(block);
     }
 
     private MethodCallExpression Polar(Function<Space> term)
@@ -156,13 +273,13 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
     private MethodCallExpression SquareRootComplex(Function<Space> term)
     {
         MethodInfo info = typeof(Complex).GetMethod("Sqrt", [typeof(Complex)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
     private MethodCallExpression SquareRootReal(Function<Space> term) 
     {
         MethodInfo info = typeof(Math).GetMethod("Sqrt", [typeof(double)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
 
@@ -178,13 +295,13 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
     private MethodCallExpression TangentComplex(Function<Space> term)
     {
         MethodInfo info = typeof(Complex).GetMethod("Tan", [typeof(Complex)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
     private MethodCallExpression TangentReal(Function<Space> term)
     {
         MethodInfo info = typeof(Math).GetMethod("Tan", [typeof(double)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
 
@@ -200,13 +317,13 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
     private MethodCallExpression CosinusComplex(Function<Space> term)
     {
         MethodInfo info = typeof(Complex).GetMethod("Cos", [typeof(Complex)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
     private MethodCallExpression CosinusReal(Function<Space> term)
     {
         MethodInfo info = typeof(Math).GetMethod("Cos", [typeof(double)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
 
@@ -222,13 +339,13 @@ public class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
     private MethodCallExpression SinusComplex(Function<Space> term)
     {
         MethodInfo info = typeof(Complex).GetMethod("Sin", [typeof(Complex)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
     private MethodCallExpression SinusReal(Function<Space> term)
     {
         MethodInfo info = typeof(Math).GetMethod("Sin", [typeof(double)])!;
-        MethodCallExpression expr = Expression.Call(info, term.Accept(this));
+        MethodCallExpression expr = Expression.Call(info, term.Parameters[0].Accept(this));
         return expr;
     }
     

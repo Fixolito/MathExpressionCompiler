@@ -1,11 +1,11 @@
 using System.Text;
 using System.Xml;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class ASTPrinter<Space> : Term<Space>.IVisitor<string>
+internal class ASTPrinter<Space> : Term<Space>.IVisitor<string>
 {
-    public string Print(Term<Space> input)
+    internal string Print(Term<Space> input)
     {
         string tmp = input.Accept(this);
         Console.WriteLine(tmp);

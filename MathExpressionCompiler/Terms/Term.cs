@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public abstract class Term<Space>
+internal abstract class Term<Space>
 {
-    public interface IVisitor<T>
+    internal interface IVisitor<T>
     {
         T VisitBinaryTerm(Binary<Space> term);
         T VisitVariableTerm(Variable<Space> term);
@@ -14,5 +14,5 @@ public abstract class Term<Space>
         T VisitGroupingTerm(Grouping<Space> term);
     }
 
-    public abstract T Accept<T>(IVisitor<T> visitor);
+    internal abstract T Accept<T>(IVisitor<T> visitor);
 }

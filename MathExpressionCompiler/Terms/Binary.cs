@@ -1,21 +1,21 @@
 ﻿using System.Collections.Generic;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Binary<Space> : Term<Space>
+internal class Binary<Space> : Term<Space>
 {
-    public readonly Term<Space> Left;
-    public readonly Token BinaryOperator;
-    public readonly Term<Space> Right;
+    internal readonly Term<Space> Left;
+    internal readonly Token BinaryOperator;
+    internal readonly Term<Space> Right;
 
-    public Binary(Term<Space> left, Token binaryOperator, Term<Space> right)
+    internal Binary(Term<Space> left, Token binaryOperator, Term<Space> right)
     {
         this.Left = left;
         this.BinaryOperator = binaryOperator;
         this.Right = right;
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    internal override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.VisitBinaryTerm(this);
     }

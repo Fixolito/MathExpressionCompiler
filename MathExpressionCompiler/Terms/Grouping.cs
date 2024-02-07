@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Grouping<Space> : Term<Space>
+internal class Grouping<Space> : Term<Space>
 {
-    public readonly Term<Space> Expression;
+    internal readonly Term<Space> Expression;
 
-    public Grouping(Term<Space> expression)
+    internal Grouping(Term<Space> expression)
     {
         this.Expression = expression;
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    internal override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.VisitGroupingTerm(this);
     }

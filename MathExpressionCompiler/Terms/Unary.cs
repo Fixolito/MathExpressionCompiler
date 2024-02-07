@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Unary<Space> : Term<Space>
+internal class Unary<Space> : Term<Space>
 {
-    public readonly Token UnaryOperator;
-    public readonly Term<Space> Right;
+    internal readonly Token UnaryOperator;
+    internal readonly Term<Space> Right;
 
-    public Unary(Token unaryOperator, Term<Space> right)
+    internal Unary(Token unaryOperator, Term<Space> right)
     {
         this.UnaryOperator = unaryOperator;
         this.Right = right;
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    internal override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.VisitUnaryTerm(this);
     }

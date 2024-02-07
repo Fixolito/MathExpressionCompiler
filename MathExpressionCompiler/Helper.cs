@@ -1,11 +1,11 @@
 using System.Linq.Expressions;
 using System.Numerics;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public static class Helper
+internal static class Helper
 {
-    public static void AddToListANoDuplication<T>(List<T> a, params List<T>[] b)
+    internal static void AddToListANoDuplication<T>(List<T> a, params List<T>[] b)
     {
         foreach (var list in b)
         {
@@ -13,7 +13,7 @@ public static class Helper
         }
     }
 
-    public static void AddToListANoDuplication<T>(List<T> a, List<T> b)
+    internal static void AddToListANoDuplication<T>(List<T> a, List<T> b)
     {
         foreach (T item in b)
         {
@@ -24,7 +24,7 @@ public static class Helper
         }
     }
 
-    public static int IndexOfFirstOccurrence<T>(IEnumerable<T> list, T item)
+    internal static int IndexOfFirstOccurrence<T>(IEnumerable<T> list, T item)
     {
         int index = 0;
         foreach (var listItem in list)
@@ -38,7 +38,7 @@ public static class Helper
         return -1;
     }
 
-    public static int IndexOfNextOccurrence<T>(IEnumerable<T> list, T item, int startIndex)
+    internal static int IndexOfNextOccurrence<T>(IEnumerable<T> list, T item, int startIndex)
     {
         int index = 0;
         bool startChecking = false;
@@ -56,7 +56,7 @@ public static class Helper
         return -1;
     }
 
-    public static bool RemoveLastOccurrence<T>(IList<T> list, T item)
+    internal static bool RemoveLastOccurrence<T>(IList<T> list, T item)
     {
         for (int i = list.Count - 1; i >= 0; i--)
         {
@@ -69,14 +69,14 @@ public static class Helper
         return false; // Item not found
     }
 
-    public static NumberSpace GetNumberSpace(Type type)
+    internal static NumberSpace GetNumberSpace(Type type)
     {
         if (type == typeof(double)) return NumberSpace.REAL;
         else if (type == typeof(Complex)) return NumberSpace.COMPLEX;
         else throw new Exception("Only <double> for real numbers or <Complex> for complex numbers are allowed.");
     }
 
-    public static string[] VariableNames(ParameterExpression[] input)
+    internal static string[] VariableNames(ParameterExpression[] input)
     {
         string[] result = new string[input.Length];
         for (int i = 0; i < input.Length; i++)
@@ -84,5 +84,19 @@ public static class Helper
             result[i] = input[i].Name!;
         }
         return result;
+    }
+
+    internal static Object Zero(NumberSpace space)
+    {
+        if (NumberSpace.REAL == space) return 0d;
+        if (NumberSpace.COMPLEX == space) return Complex.Zero;
+        throw new NotImplementedException();
+    }
+
+    internal static Object One(NumberSpace space)
+    {
+        if (NumberSpace.REAL == space) return 1d;
+        if (NumberSpace.COMPLEX == space) return Complex.One;
+        throw new NotImplementedException();
     }
 }

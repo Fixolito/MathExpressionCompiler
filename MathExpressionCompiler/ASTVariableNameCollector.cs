@@ -1,18 +1,18 @@
 using System.Text;
 using System.Xml;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class ASTVariableNameCollector<Space>(List<Term<Space>> terms) : Term<Space>.IVisitor<List<string>>
+internal class ASTVariableNameCollector<Space>(List<Term<Space>> terms) : Term<Space>.IVisitor<List<string>>
 {
     private bool RemoveBoundVariables = true;
-    public List<string> BoundVariableNames = [];
-    public List<string> UnboundVariableNames = [];
+    internal List<string> BoundVariableNames = [];
+    internal List<string> UnboundVariableNames = [];
     private List<string> EnvironmentVaribaleNames = [];
     private Term<Space> Root = terms[0];
     private bool IsAssgning = false;
     private bool hasRun;
-    public List<string> CollectNames(bool removeBoundVariables = true)
+    internal List<string> CollectNames(bool removeBoundVariables = true)
     {
         RemoveBoundVariables = removeBoundVariables;
         BoundVariableNames.Clear();
@@ -23,7 +23,7 @@ public class ASTVariableNameCollector<Space>(List<Term<Space>> terms) : Term<Spa
         return tmp;
     }
 
-    public List<string> CollectNames(Term<Space> node, bool removeBoundVariables = true)
+    internal List<string> CollectNames(Term<Space> node, bool removeBoundVariables = true)
     {
         var rememberRoot = Root;
         Root = node;
@@ -64,7 +64,6 @@ public class ASTVariableNameCollector<Space>(List<Term<Space>> terms) : Term<Spa
 
     private List<string> Sum(Function<Space> term)
     {
-        Console.WriteLine($"SumVisit:");
         IsAssgning = true;
         string loopVariable = term.Parameters[0].Accept(this)[0];
         if (EnvironmentVaribaleNames.Contains(loopVariable))
@@ -119,7 +118,6 @@ public class ASTVariableNameCollector<Space>(List<Term<Space>> terms) : Term<Spa
 
     public List<string> VisitVariableTerm(Variable<Space> term)
     {
-        Console.WriteLine($"VariableVisit {term.Name}");
         string name = term.Name;
         if (IsAssgning)
         {
@@ -140,17 +138,15 @@ public class ASTVariableNameCollector<Space>(List<Term<Space>> terms) : Term<Spa
         return [name];
     }
 
-    public void PrintUnbound()
+    internal void PrintUnbound()
     {
         if (!hasRun) CollectNames();
         Console.WriteLine($"UnboundVariableNames: [{string.Join(", ", UnboundVariableNames)}]");
     }
 
-    public void PrintBound()
+    internal void PrintBound()
     {
         if (!hasRun) CollectNames();
         Console.WriteLine($"BoundVariableNames: [{string.Join(", ", BoundVariableNames)}]");
     }
-    
 }
-

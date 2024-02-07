@@ -2,21 +2,21 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Numerics;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class MathExpressionCreator()
+internal class MathExpressionCreator()
 {
-    public static ParameterExpression[] LastParameters { get; private set; }=[];
-    public static Expression? LastRoot { get; private set; } = null;
-    public static Delegate? LastCompiled { get; private set; } = null;
-    public static Delegate? LastCompiledDoubleInput  { get; private set; } = null;
+    internal static ParameterExpression[] LastParameters { get; private set; }=[];
+    internal static Expression? LastRoot { get; private set; } = null;
+    internal static Delegate? LastCompiled { get; private set; } = null;
+    internal static Delegate? LastCompiledDoubleInput  { get; private set; } = null;
 
-    public static Delegate CreateRegularInputs<T>(string source, out string[] variableOrder)
+    internal static Delegate CreateRegularInputs<T>(string source, out string[] variableOrder)
     {
         return Create<T>(source, false, out variableOrder);
     }
 
-    public static Delegate CreateDoubleInputs<T>(string source, out string[] variableOrder)
+    internal static Delegate CreateDoubleInputs<T>(string source, out string[] variableOrder)
     {
         return Create<T>(source, true, out variableOrder);
     }

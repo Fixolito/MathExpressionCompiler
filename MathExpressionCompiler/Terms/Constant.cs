@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Constant<Space> : Term<Space>
+internal class Constant<Space> : Term<Space>
 {
-    public readonly Space Value;
+    internal readonly Space Value;
 
-    public Constant(Space value)
+    internal Constant(Space value)
     {
         this.Value = value;
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    internal override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.VisitConstantTerm(this);
     }

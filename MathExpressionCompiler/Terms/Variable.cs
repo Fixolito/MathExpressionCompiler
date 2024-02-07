@@ -1,20 +1,19 @@
 ﻿using System.Collections.Generic;
 
-namespace MathExpressionCompiler;
+namespace MEC;
 
-public class Variable<Space> : Term<Space>
+internal class Variable<Space> : Term<Space>
 {
-    public readonly string Name;
-    public readonly Space? Value;
+    internal readonly string Name;
+    internal readonly Space? Value;
 
-    public Variable(string name, Space? value)
+    internal Variable(string name, Space? value)
     {
         this.Name = name;
-        Console.WriteLine($"NewName: {name} {Name}");
         this.Value = value;
     }
 
-    public override T Accept<T>(IVisitor<T> visitor)
+    internal override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.VisitVariableTerm(this);
     }
