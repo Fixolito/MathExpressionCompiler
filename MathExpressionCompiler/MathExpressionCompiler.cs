@@ -21,7 +21,7 @@ public static class MathExpressionCompiler
         Console.WriteLine($"[{string.Join(", ", tmp)}]");
         Console.WriteLine(sum.DynamicInvoke(4,7));
 
-        var del = MathExpressionCompiler.CreateDelegateWithDoubleParameters<Complex>("polar(a,b)", out string[] variableNameList);
-        Console.WriteLine(del.DynamicInvoke(4,7));
+        /* var del = MathExpressionCompiler.CreateDelegateWithDoubleParameters<Complex>("polar(a,b)", out string[] variableNameList);
+        Console.WriteLine(del.DynamicInvoke(4,7)); */
     }
 }

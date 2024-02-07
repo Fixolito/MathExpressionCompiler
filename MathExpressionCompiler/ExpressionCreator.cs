@@ -124,9 +124,6 @@ internal class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
 
     private BlockExpression Sum(Function<Space> term)
     {
-
-
-        // Get loop variable
         VariableManager.IsActive = false;
         string loopVariableName = ((ParameterExpression)term.Parameters[0].Accept(this)).Name!;
         VariableManager.IsActive = true;
@@ -134,7 +131,6 @@ internal class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
         Expression start = term.Parameters[1].Accept(this);
         Expression end = term.Parameters[2].Accept(this);
         Expression body = term.Parameters[3].Accept(this);
-
 
         var returnTarget = Expression.Label(typeof(Space));
         var resultVariable = Expression.Variable(typeof(Space), "RESULTSUM");
@@ -163,7 +159,7 @@ internal class ExpressionCreator<Space> : Term<Space>.IVisitor<Expression>
 
         var updateResultVariable = Expression.Assign(resultVariable, Expression.Add(resultVariable, body));
 
-        var loopBlock = Expression.Block(body, updateResultVariable, incrementIterationVariable, condition);
+        var loopBlock = Expression.Block(body, updateResultVariable, incrementIterationVariable);//, condition);
 
         var loop = Expression.Loop(
             Expression.IfThenElse(

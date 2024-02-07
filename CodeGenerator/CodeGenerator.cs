@@ -3,9 +3,9 @@ using System.IO;
 
 namespace CodeGenerator;
 
-public static class CodeGenerator
+internal static class CodeGenerator
 {
-    public static void CreateCode(string baseName, string[] children)
+    internal static void CreateCode(string baseName, string[] children)
     {
         string path = Path.Combine("..", "MathExpressionCompiler", baseName + "s");
         Directory.CreateDirectory(path);
